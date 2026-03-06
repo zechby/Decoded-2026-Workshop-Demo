@@ -1,1 +1,6 @@
 .env
+__pycache__
+.gitignore
+/src/__pycache__
+.vscode
+.venv
