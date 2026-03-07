@@ -26,6 +26,8 @@ current_line = 0
 
 button_rect = pygame.Rect(WIDTH - 120, HEIGHT - 60, 100, 40)
 
+
+# use this to store texts, and therefore the chat as a whole
 chat_history = [
     {
         "User": "AI",
@@ -34,6 +36,8 @@ chat_history = [
     }
 ]
 
+
+# ts function just removes the pos value from all of chat history, makes it easier for the ai to parse
 def strip_chat_history(chat_history):
     actual_chats = []
     for i in chat_history:
@@ -46,7 +50,7 @@ def strip_chat_history(chat_history):
 
 users = {
         "AI": {
-            "personality": "you are a character in a dating simulator, respond in less than 50 characters and be cute and flirty",
+            "personality": "you are a character in a dating simulator, respond in less than 50 characters and be cute, flirty and eager to converse",
             "pfp_path": "assets/smile.png",
             "display_name": "big yahu"
         },
@@ -58,7 +62,7 @@ users = {
     }
 
 def send_text(text_dict):
-    rendered_content = text_font.render(text_dict["Text"], True, (255, 255, 255))
+    rendered_content = text_font.render(text_dict["Text"], True, (255, 255, 255), wraplength=485)
     # we need to render the text before drawing the background textbox
     
     text_width = rendered_content.get_width()
@@ -78,7 +82,6 @@ def send_text(text_dict):
     rendered_name = name_font.render(users[text_dict["User"]]["display_name"], True, (255,255,0))
     screen.blit(rendered_name, (text_dict["pos"][0] - 55, text_dict["pos"][1] + 30))
     # renders the name just under the profile picture
-    
     
 
     
@@ -103,14 +106,24 @@ while running:
                     "User": "User",
                     "Text": input_buffer,
                     "pos": (55, 305)
-                })      
+                })
                 input_buffer = ""
                 
+                
+                response = call_llama_4_gm(history = strip_chat_history(chat_history)[:-1],
+                system_prompt = users["AI"]["personality"], 
+                player_action = chat_history[len(chat_history) - 1]["Text"])
+        
+                response = response.replace('"', '')
+                chat_history.append({
+            "User": "AI",
+            "Text": response,
+            "pos": (55, 355)
+        })
+
+                
                 for text in chat_history:
-                    text["pos"] = (text["pos"][0], text["pos"][1] - 100)
-                
-                
-                # pushes all the texts up by 50 pixels
+                    text["pos"] = (text["pos"][0], text["pos"][1] - text_font.render(chat_history[-1]["Text"], True, (255,255,255), wraplength=485).get_height() - 65)
                     
             else:
                 # if the text takes up more space than is available in the textbox don't let people add more
@@ -121,23 +134,12 @@ while running:
     
     # sends (renders) all the texts available in history that are not wayyy off screen
     for text in chat_history:
-        if text["pos"][1] > -100:
+        if text["pos"][1] > -1000:
             send_text(text)
         
     
         
-    if chat_history[len(chat_history) - 1]["User"] == "User":
-        response = call_llama_4_gm(history = strip_chat_history(chat_history)[:-1],
-                                   system_prompt = users["AI"]["personality"], 
-                                   player_action = chat_history[len(chat_history) - 1]["Text"])
-        
-        response = response.replace('"', '')
-        chat_history.append({
-            "User": "AI",
-            "Text": response,
-            "pos": (55, 255)
-        })
-
+    
     pygame.draw.rect(screen, (70, 70, 100), input_box, border_radius=7)
     draw_input_box(input_buffer)
     

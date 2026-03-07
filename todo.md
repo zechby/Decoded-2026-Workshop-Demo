@@ -2,6 +2,7 @@
 
 - texting longer than like 50 chars, so need resizeable textboxes
 - other assets, idk like a loading or like typing animation or something
+- resizeable/larger window?
 
 ##Busg##
 
@@ -11,3 +12,4 @@
 
 - the names of characters are not centred
 - the program hangs for a sec when getting api response from groq
+- idk like random tiny other like ui things
