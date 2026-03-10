@@ -22,7 +22,7 @@ def call_llama_4_gm(player_action, system_prompt, history=""):
                 "content": f"Game History: {history}\n\nPlayer Action: {player_action}"
             }
         ],
-        model="meta-llama/llama-4-maverick-17b-128e-instruct",
+        model="llama-3.3-70b-versatile",
         temperature=0.7,  # Higher = more creative, Lower = more consistent
         max_tokens=500,    
     )
