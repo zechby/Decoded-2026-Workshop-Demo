@@ -3,6 +3,7 @@ import pygame
 import sys
 
 pygame.init()
+pygame.mixer.init()
 
 # window; assets; images; scaling
 # game window setup
@@ -14,10 +15,14 @@ background = pygame.transform.scale(background, (1000, 500))
 # npc sprite
 npc = pygame.image.load("assets/npc.png")
 npc = pygame.transform.scale(npc, (400, 400))
+# music
+pygame.mixer.music.load("assets/music.mp3")
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play(-1)
 
 # positioning UI; rect objects; centering objects
 # chatbox
-chat_panel = pygame.Rect(0, 0, 700, 120)
+chat_panel = pygame.Rect(0, 0, 700, 130)
 chat_panel.centerx = screen.get_width() // 2
 chat_panel.bottom = screen.get_height() - 20
 # npc repositioning
@@ -41,6 +46,7 @@ player_input = ""
 
 # main game loop (60 fps as per clock)
 running = True
+frozen = False
 while running:
     
     # 1. handle events (keyboard input, capturing text, etc.)
@@ -51,19 +57,22 @@ while running:
         
         if event.type == pygame.KEYDOWN:
 
-            if event.key == pygame.K_BACKSPACE:
-                player_input = player_input[:-1]
+            if not frozen:
+                if event.key == pygame.K_BACKSPACE:
+                    player_input = player_input[:-1]
 
-            elif event.key == pygame.K_RETURN:
-                messages.append("> " + player_input)
+                elif event.key == pygame.K_RETURN:
+                    messages.append("> " + player_input)
 
-                npc_response = "NPC: Nice to meet you " + player_input
-                messages.append(npc_response)
+                    npc_response = "NPC: Nice to meet you " + player_input
+                    messages.append(npc_response)
 
-                player_input = ""
+                    frozen = True
 
-            else:
-                player_input += event.unicode
+                    player_input = ""
+
+                else:
+                    player_input += event.unicode
 
     # 2. rendering/drawing
     # background
@@ -85,7 +94,10 @@ while running:
         screen.blit(text_surface, (chat_panel.x + 10, y))
         y += 30
     # player input (dynamic text)
-    input_surface = font.render("> " + player_input, True, white)
+    if frozen:
+        input_surface = font.render("", True, white)
+    else:
+        input_surface = font.render("> " + player_input, True, white)
     screen.blit(input_surface, (chat_panel.x + 10, y))
 
     # 3. updating the screen
@@ -93,5 +105,6 @@ while running:
     clock.tick(60)
 
 # clean exit
+pygame.mixer.music.stop()
 pygame.quit()
 sys.exit()
