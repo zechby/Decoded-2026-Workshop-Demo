@@ -17,13 +17,17 @@ npc = pygame.transform.scale(npc, (400, 400))
 
 # positioning UI; rect objects; centering objects
 # chatbox
-chat_panel = pygame.Rect(0, 0, 700, 180)
+chat_panel = pygame.Rect(0, 0, 700, 120)
 chat_panel.centerx = screen.get_width() // 2
-chat_panel.bottom = screen.get_height() - 40
+chat_panel.bottom = screen.get_height() - 20
 # npc repositioning
 npc_rect = npc.get_rect()
 npc_rect.centerx = screen.get_width() // 2
 npc_rect.bottom = chat_panel.y + 100
+# namebox
+name_panel = pygame.Rect(0, 0, chat_panel.width, 40)
+name_panel.centerx = screen.get_width() // 2
+name_panel.top = 20
 
 # define colours, font, and clock
 black = (0, 0, 0)
@@ -66,6 +70,12 @@ while running:
     screen.blit(background, (0,0))
     # npc
     screen.blit(npc, npc_rect)
+    # npc name box
+    pygame.draw.rect(screen, black, name_panel)
+    npc_name = "Jerry"
+    name_surface = font.render(npc_name, True, white)
+    name_rect = name_surface.get_rect(center=name_panel.center)
+    screen.blit(name_surface, name_rect)
     # chat box
     pygame.draw.rect(screen, black, chat_panel)
     # dialogue
@@ -77,14 +87,6 @@ while running:
     # player input (dynamic text)
     input_surface = font.render("> " + player_input, True, white)
     screen.blit(input_surface, (chat_panel.x + 10, y))
-    # sprite name box
-    npc_name = "Jerry"
-    name_surface = font.render(npc_name, True, (200, 200, 200))
-    name_rect = name_surface.get_rect()
-    name_rect.centerx = npc_rect.centerx
-    name_rect.bottom = npc_rect.top - 5
-    pygame.draw.rect(screen, black, name_rect.inflate(10,4))
-    screen.blit(name_surface, name_rect)
 
     # 3. updating the screen
     pygame.display.flip()
