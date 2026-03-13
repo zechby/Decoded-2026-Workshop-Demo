@@ -77,6 +77,14 @@ while running:
     # player input (dynamic text)
     input_surface = font.render("> " + player_input, True, white)
     screen.blit(input_surface, (chat_panel.x + 10, y))
+    # sprite name box
+    npc_name = "Jerry"
+    name_surface = font.render(npc_name, True, (200, 200, 200))
+    name_rect = name_surface.get_rect()
+    name_rect.centerx = npc_rect.centerx
+    name_rect.bottom = npc_rect.top - 5
+    pygame.draw.rect(screen, black, name_rect.inflate(10,4))
+    screen.blit(name_surface, name_rect)
 
     # 3. updating the screen
     pygame.display.flip()
@@ -85,10 +93,3 @@ while running:
 # clean exit
 pygame.quit()
 sys.exit()
-
-
-
-# setup
-# create game objects
-# game loop (input, update, render, repeat)
-# exit
