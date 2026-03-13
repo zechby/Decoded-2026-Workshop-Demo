@@ -71,3 +71,9 @@ def call_groq(player_input: str, chat_history: list) -> str:
     # we add the AI response to the chat_history from before, storing it in the global conversation array
     return chat_history[-1].content
      
+while True:
+    user_input = input("Input a message: ")
+    if user_input == "q":
+        break
+    response = call_groq(user_input, chat_history)
+    print(f"GROQ: {response}")
