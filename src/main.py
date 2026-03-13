@@ -147,11 +147,4 @@ while running:
 
 
 pygame.quit()
-
-
-for i in chat_history:
-    print(i)
-
-
-
 sys.exit()

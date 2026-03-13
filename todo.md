@@ -1,6 +1,5 @@
 ##Features##
 
-- texting longer than like 50 chars, so need resizeable textboxes
 - other assets, idk like a loading or like typing animation or something
 - resizeable/larger window?
 

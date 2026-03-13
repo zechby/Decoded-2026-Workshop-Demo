@@ -8,6 +8,8 @@ from helpers import word_wrap, extract_status_from_response, parse_character_inf
 from dotenv import load_dotenv
 
 load_dotenv()
+api_key = os.getenv("GROK_API_KEY")
+
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
