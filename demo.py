@@ -9,10 +9,10 @@ pygame.init()
 screen = pygame.display.set_mode((1000, 500))
 pygame.display.set_caption("NPC Chat Demo")
 # background
-background = pygame.image.load("background.png")
+background = pygame.image.load("assets/background.png")
 background = pygame.transform.scale(background, (1000, 500))
 # npc sprite
-npc = pygame.image.load("npc.png")
+npc = pygame.image.load("assets/npc.png")
 npc = pygame.transform.scale(npc, (400, 400))
 
 # positioning UI; rect objects; centering objects
