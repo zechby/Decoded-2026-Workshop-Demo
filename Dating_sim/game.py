@@ -4,7 +4,7 @@ import os
 import time
 import threading
 from groq import Groq
-from helpers import word_wrap, extract_status_from_response, parse_character_info
+from Dating_sim.helpers import word_wrap, extract_status_from_response, parse_character_info
 from dotenv import load_dotenv
 
 load_dotenv()
