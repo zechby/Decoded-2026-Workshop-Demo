@@ -10,13 +10,13 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((1000, 500))
 pygame.display.set_caption("NPC Chat Demo")
 # background
-background = pygame.image.load("assets/background.png")
+background = pygame.image.load("pygame_demo/assets/background.png")
 background = pygame.transform.scale(background, (1000, 500))
 # npc sprite
-npc = pygame.image.load("assets/npc.png")
+npc = pygame.image.load("pygame_demo/assets/npc.png")
 npc = pygame.transform.scale(npc, (400, 400))
 # music
-pygame.mixer.music.load("assets/music.mp3")
+pygame.mixer.music.load("pygame_demo/assets/music.mp3")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1)
 
