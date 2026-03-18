@@ -77,9 +77,12 @@ RULES:
 - Be creative, funny, and engaging. Each character should feel distinct."""
 
 
+# ─── STAGE 3: AI CLIENT ───────────────────────────────────────────────────────
 # AI client class responsible for communicating with the GROQ api
 class AIClient:
+################################################################################################################################################
     def __init__(self):
+        # TODO Stage 3: load API key and connect to Groq
         # Get the API key from environment variables (loaded from .env earlier)
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
@@ -89,6 +92,7 @@ class AIClient:
         self.client = Groq(api_key=api_key)
 
     def send_messages(self, messages):
+        # TODO Stage 3: send messages to Groq and return response text
         # Send a list of chat messages to Groq and return the AI's response as a string.
         # 'messages' is a list of dicts in this format: [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
         # This is the standard format used by OpenAI-compatible APIs.
@@ -106,6 +110,7 @@ class AIClient:
             return f"[AI Error: {error}] [STATUS:ongoing]"
 
     def generate_character(self):
+        # TODO Stage 3: ask AI to generate a character
         # Ask the AI to generate a new character using the character generation prompt.
         # Returns a tuple: (parsed_dict, raw_text)
         # raw_text is the full AI response; parsed_dict is the dictionary with the character attributes
@@ -123,9 +128,12 @@ class AIClient:
         )
         # parse_character_info extracts the attributes into a dictionary
         return parse_character_info(raw_text), raw_text
+################################################################################################################################################
 
 
+# ─── DATE SCENE ───────────────────────────────────────────────────────────────
 # Date scene that basically handles everything, chat log, input and allat
+
 class DateScene:
     def __init__(self, screen, ai_client):
         self.screen = screen  # The pygame Surface representing the entire window
@@ -185,147 +193,62 @@ class DateScene:
             # Each line is 20px tall, plus 8px of padding between messages
             total += len(lines) * 20 + 8
         return total
+    
+    # ─── STAGE 4: THREADING ───────────────────────────────────────────────────
 
     def _start_character_generation(self):
         # Starts the AI character generation on a separate thread
         # If we called this directly, the game window would freeze cuz generation takes time
         # Threading lets us do work behind the scenes while the game keeps running
-
-        def do_generation():
-            # This function runs on the background thread
-            info, raw = (
-                self.ai.generate_character()
-            )  # call the generation function we made
-            self.character_info = info  # Store the parsed character data
-
-            # Extract the fields we want to display
-            name = info.get("NAME", "???")  # .get() with a default prevents errors
-            job = info.get("job", "unknown")
-            personality = info.get("PERSONALITY", "mysterious")
-
-            # Announce the new character in the chat
-            self.add_to_chat("system", f"{name} the {job} appears!", SYSTEM_COLOR)
-            self.add_to_chat("system", f"Personality: {personality}", SYSTEM_COLOR)
-
-            # Recall {character_description} in the system prompt, this is where we use the raw info to tell the ai how to act
-            system_prompt = DATE_SYSTEM_PROMPT_TEMPLATE.format(
-                character_description=raw
-            )
-            # Initialize the conversation history with just the system prompt
-            self.conversation_history = [{"role": "system", "content": system_prompt}]
-
-            # Ask the AI to generate an opening greeting, however the user prompt is NOT added to the context
-            greeting_request = self.conversation_history + [
-                {
-                    "role": "user",
-                    "content": "(The player just approached you. Greet them in character.)",
-                }
-            ]
-            ai_response = self.ai.send_messages(greeting_request)
-            # extract_status_from_response() gets the status from the response
-            # it returns the clean display text and the status separately
-            clean_text, status = extract_status_from_response(ai_response)
-
-            # Save the greeting to the conversation history
-            self.conversation_history.append(
-                {"role": "assistant", "content": ai_response}
-            )
-            # Show the greeting in the chat
-            self.add_to_chat("ai", f"{name}: {clean_text}", AI_COLOR)
-            # Update the date status, it should be ONGOING from here
-            self.date_status = status
-
-        # daemon=True means this thread will be killed if main program is killed
-        thread = threading.Thread(target=do_generation, daemon=True)
-        thread.start()  # Start doing this in da background
+        # TODO Stage 4: move this to a background thread
+        # Placeholder: hardcoded character so the UI has something to show
+        self.character_info = {
+            "NAME": "Alex",
+            "JOB": "Barista",
+            "PERSONALITY": "Friendly, witty, slightly sarcastic"
+        }
+        self.add_to_chat("system", "Alex the Barista appears!", SYSTEM_COLOR)
+        self.add_to_chat("ai", "Alex: Hey there! Can I help you with something?", AI_COLOR)
+        self.date_status = "ongoing"
 
     def _send_player_message(self, message):
         # Send the player's message to the AI in the background
         # Set waiting_for_ai to True to stop the user from more messages when the response is generating
-        self.waiting_for_ai = True
-        character_name = self.character_info.get("NAME", "???")  # Get da character name
+        # TODO Stage 4: move this to a background thread
+        # Placeholder: hardcoded response
+        self.add_to_chat("ai", "Alex: That's interesting!", AI_COLOR)
+        self.waiting_for_ai = False
 
-        def do_send():
-            # Add the player's message to the conversation history in API format
-            self.conversation_history.append({"role": "user", "content": message})
-            # Send the full conversation history so the AI has all context
-            ai_response = self.ai.send_messages(self.conversation_history)
-            # Save the AI's response to history so future messages retain context
-            self.conversation_history.append(
-                {"role": "assistant", "content": ai_response}
-            )
-
-            # Strip the status tag for display, but keep the status value
-            clean_text, status = extract_status_from_response(ai_response)
-            self.add_to_chat("ai", f"{character_name}: {clean_text}", AI_COLOR)
-            # Update game state based on what the AI decided (ongoing/accepted/rejected)
-            self.date_status = status
-            # Unblock the input box — player can type again
-            self.waiting_for_ai = False
-
-        # Same as above
-        thread = threading.Thread(target=do_send, daemon=True)
-        thread.start()
+    # ─── STAGE 5: EVENT HANDLING ──────────────────────────────────────────────
 
     def update(self, events):
         # Process all input events that happened since the last frame.
-        # Returns 1 of 3 strings: "win" or "retry" or "none" to see if the scene needs changing
+        # TODO Stage 5: add mouse wheel scroll and scene transition returns
         for event in events:
-            # Check if the user scrolled
-            if event.type == pygame.MOUSEWHEEL:
-                # event.y is +1 for scroll up, -1 for scroll down
-                # We invert it (subtract) so scrolling up moves the view up (less offset)
-                self.scroll_offset -= event.y * 30
-                # Clamp: scroll_offset can't go below 0 (can't scroll above the top)
-                self.scroll_offset = max(0, self.scroll_offset)
-                # Clamp: can't scroll below the bottom of all content
-                max_scroll = max(
-                    0, self._total_chat_height() - self._visible_chat_height()
-                )
-                self.scroll_offset = min(max_scroll, self.scroll_offset)
-                continue  # Skip to the next event — no key handling needed here
-
-            # We only care about key presses from here
             if event.type != pygame.KEYDOWN:
                 continue
-
-            # escape just quits the game
             if event.key == pygame.K_ESCAPE:
-                pygame.quit()  # Shut down pygame first
-                sys.exit()  # Then kill python
-
-            if event.key == pygame.K_RETURN and self.typed_text.strip():
-                # .strip() removes whitespace to prevent blank messages
-                if self.date_status == "accepted":
-                    # Go to da final screen
-                    return "win"
-                elif self.date_status == "rejected":
-                    # You failed gng, start a new datescene
-                    return "retry"
-                elif self.date_status == "ongoing" and not self.waiting_for_ai:
-                    # Send your message cuz its still going
+                pygame.quit()
+                sys.exit()
+            elif event.key == pygame.K_RETURN and self.typed_text.strip():
+                if self.date_status == "ongoing" and not self.waiting_for_ai:
                     message = self.typed_text.strip()
                     self.add_to_chat("user", f"You: {message}", USER_COLOR)
-                    self.typed_text = ""  # Reset the input box
-                    self._send_player_message(message)  # Use the function above
-
+                    self.typed_text = ""
+                    self._send_player_message(message)
             elif event.key == pygame.K_BACKSPACE:
-                # Remove the last character from the input box
-                self.typed_text = self.typed_text[:-1]  # String splicing
+                self.typed_text = self.typed_text[:-1]
             elif event.unicode and event.unicode.isprintable():
-                # filter out non unicode characters
                 self.typed_text += event.unicode
-
         return None
+
+    # ─── STAGE 2: DRAWING ─────────────────────────────────────────────────────
 
     def draw(self):
         # Draws the entire DateScene to the screen
         # This is called every frame, so everything is redrawn from scratch each tick
-
-        # Give it some background color first
         self.screen.fill(DARK_BG)
-
-        # Build the title text for the top bar
+        # TODO Stage 2: draw top bar to show character name
         name = self.character_info.get("NAME", "Loading...")
         job = self.character_info.get("JOB", "")
         title_text = f"{name} the {job}" if job else name
@@ -338,10 +261,9 @@ class DateScene:
         self.screen.blit(
             self.font_small.render("[ESC] quit", True, GRAY), (SCREEN_WIDTH - 90, 12)
         )
-
         # We draw the chat onto a separate off-screen Surface first, then stamp it onto the screen.
         # This is needed for scrolling: we can position the chat_surface up or down to show
-        # different parts, which is simpler than clipping every individual message.
+        # different parts, which is simpler than clipping every individual message.        
         chat_top = 44  # offset from the top bar
         chat_height = self._visible_chat_height()
         # Create a new Surface the size of the visible chat area
@@ -364,7 +286,8 @@ class DateScene:
 
         # Draw the completed chat surface onto the main screen starting at chat_top
         self.screen.blit(chat_surface, (0, chat_top))
-
+        # ──────────────────────────────────────────────────────────────────────
+        # TODO Stage 2: draw accepted/rejected status banners
         # Render accepted or rejected banners at the end
         # Overlay on top of the chat area when the date ends
         if self.date_status == "accepted":
@@ -403,26 +326,21 @@ class DateScene:
         self.screen.blit(
             self.font.render(f"> {self.typed_text}", True, WHITE), (10, input_y + 10)
         )
+# ─── Final Scene ────────────────────────────────────────────────
 
-
-# Da final Scene
 class FinishScene:
     def __init__(self, screen, total_seconds):
         self.screen = screen
-        self.total_seconds = (
-            total_seconds  # How long the player took, in seconds (float)
-        )
-        # Set the fonts
+        self.total_seconds = total_seconds
         self.font_big = pygame.font.SysFont("comic_sans", 42, bold=True)
         self.font_medium = pygame.font.SysFont("comic_sans", 24)
         self.font_small = pygame.font.SysFont("comic_sans", 18)
 
     def update(self, events):
-        # Self explanatory
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    return "restart"  # Signal Game to go back to a new DateScene
+                    return "restart"
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
@@ -430,33 +348,20 @@ class FinishScene:
 
     def draw(self):
         self.screen.fill(DARK_BG)
-
-        # "YOU WIN!" title, centered horizontally at y=100
         title = self.font_big.render("YOU WIN!", True, (255, 200, 100))
         self.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 100))
-
         subtitle = self.font_medium.render("You got a date!", True, (255, 100, 150))
         self.screen.blit(subtitle, (SCREEN_WIDTH // 2 - subtitle.get_width() // 2, 170))
-
-        # Format total_seconds as MM:SS and display
         minutes = int(self.total_seconds // 60)
         seconds = int(self.total_seconds % 60)
-        time_surface = self.font_big.render(
-            f"Time: {minutes:02d}:{seconds:02d}",
-            True,
-            WHITE,
-        )
-        self.screen.blit(
-            time_surface, (SCREEN_WIDTH // 2 - time_surface.get_width() // 2, 260)
-        )
-
-        hint = self.font_small.render(
-            "[ ENTER to play again  |  ESC to quit ]", True, GRAY
-        )
+        time_surface = self.font_big.render(f"Time: {minutes:02d}:{seconds:02d}", True, WHITE)
+        self.screen.blit(time_surface, (SCREEN_WIDTH // 2 - time_surface.get_width() // 2, 260))
+        hint = self.font_small.render("[ ENTER to play again  |  ESC to quit ]", True, GRAY)
         self.screen.blit(hint, (SCREEN_WIDTH // 2 - hint.get_width() // 2, 400))
 
 
-# Game initialization
+# ─── GAME (STAGE 1 + STAGE 5) ────────────────────────────────────────────────
+
 class Game:
     def __init__(self):
         pygame.init()  # Initialize pygame
@@ -493,7 +398,6 @@ class Game:
 
             # Call the draw function of the scene each frame
             self.current_scene.draw()
-
             # .flip() sends the stuff we drew to the actual game window
             pygame.display.flip()
 
@@ -502,20 +406,8 @@ class Game:
             self.clock.tick(FPS)
 
     def handle_scene_change(self, result):
-        # Switch the active scene based on the return of update()
-        if result == "win":
-            # Player won: show the finish screen with the time spent
-            elapsed = time.time() - self.timer_start
-            self.current_scene = FinishScene(self.screen, elapsed)
-
-        elif result == "retry":
-            # Got rejected: swap in a fresh DateScene with a new AI character
-            self.current_scene = DateScene(self.screen, self.ai_client)
-
-        elif result == "restart":
-            # Start new game
-            self.current_scene = DateScene(self.screen, self.ai_client)
-            self.timer_start = time.time()  # Reset the timer for the new run
+        # TODO Stage 5: swap scenes based on result string
+        pass
 
 
 if __name__ == "__main__":
