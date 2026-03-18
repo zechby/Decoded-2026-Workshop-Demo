@@ -214,9 +214,21 @@ class DateScene:
         # Draws the entire DateScene to the screen
         # This is called every frame, so everything is redrawn from scratch each tick
         self.screen.fill(DARK_BG)
-
+################################################################################################################################################
         # TODO Stage 2: draw top bar to show character name
+        name = self.character_info.get("NAME", "Loading...")
+        job = self.character_info.get("JOB", "")
+        title_text = f"{name} the {job}" if job else name
 
+        # Big rectangle on da top as top bar
+        pygame.draw.rect(self.screen, TOP_BAR_BG, (0, 0, SCREEN_WIDTH, 40))
+        # font.render(text, antialias, color) returns the unicode text as a rendered surface
+        # blit() basically draws onto the current surface
+        self.screen.blit(self.font_title.render(title_text, True, AI_COLOR), (10, 8))
+        self.screen.blit(
+            self.font_small.render("[ESC] quit", True, GRAY), (SCREEN_WIDTH - 90, 12)
+        )
+################################################################################################################################################
         # We draw the chat onto a separate off-screen Surface first, then stamp it onto the screen.
         # This is needed for scrolling: we can position the chat_surface up or down to show
         # different parts, which is simpler than clipping every individual message.        
@@ -243,12 +255,47 @@ class DateScene:
         # Draw the completed chat surface onto the main screen starting at chat_top
         self.screen.blit(chat_surface, (0, chat_top))
         # ──────────────────────────────────────────────────────────────────────
-
+################################################################################################################################################
         # TODO Stage 2: draw accepted/rejected status banners
+        # Render accepted or rejected banners at the end
+        # Overlay on top of the chat area when the date ends
+        if self.date_status == "accepted":
+            # Center the banner horizontally using its pixel width
+            # Logic is pretty self explanatory
+            banner = self.font_title.render(
+                "They agreed to date you!", True, (255, 100, 150)
+            )
+            self.screen.blit(
+                banner,
+                (SCREEN_WIDTH // 2 - banner.get_width() // 2, SCREEN_HEIGHT - 78),
+            )
+            hint = self.font_small.render("[ENTER] to continue", True, WHITE)
+            self.screen.blit(
+                hint, (SCREEN_WIDTH // 2 - hint.get_width() // 2, SCREEN_HEIGHT - 55)
+            )
 
-        # TODO Stage 2: draw text input box
+        elif self.date_status == "rejected":
+            banner = self.font_title.render("They rejected you!", True, RED_ACCENT)
+            self.screen.blit(
+                banner,
+                (SCREEN_WIDTH // 2 - banner.get_width() // 2, SCREEN_HEIGHT - 78),
+            )
+            hint = self.font_small.render("[ENTER] to try someone new", True, WHITE)
+            self.screen.blit(
+                hint, (SCREEN_WIDTH // 2 - hint.get_width() // 2, SCREEN_HEIGHT - 55)
+            )
 
-
+        # The input box is fixed at the bottom of the screen
+        input_y = SCREEN_HEIGHT - 40
+        # Draw the input box background
+        pygame.draw.rect(self.screen, INPUT_BG, (0, input_y, SCREEN_WIDTH, 40))
+        # Draw a horizontal line along the top of the input box to separate it from the rest
+        pygame.draw.line(self.screen, GRAY, (0, input_y), (SCREEN_WIDTH, input_y))
+        # Little ">" to show where you are typing right now
+        self.screen.blit(
+            self.font.render(f"> {self.typed_text}", True, WHITE), (10, input_y + 10)
+        )
+################################################################################################################################################
 # ─── Final Scene ────────────────────────────────────────────────
 
 class FinishScene:
@@ -286,9 +333,7 @@ class FinishScene:
 # ─── GAME (STAGE 1 + STAGE 5) ────────────────────────────────────────────────
 
 class Game:
-################################################################################################################################################
     def __init__(self):
-        # TODO Stage 1: initialise pygame, create window, clock, AI client, first scene
         pygame.init()  # Initialize pygame
         # Create the game window
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -303,7 +348,6 @@ class Game:
         self.timer_start = time.time()
 
     def run(self):
-        # TODO Stage 1: main game loop
         # Da main game loop, runs forever, iterates once per frame
         while True:
             # Get all the events that happened every frame
@@ -331,7 +375,7 @@ class Game:
             # Wait until we've used up the time for one frame at our target FPS
             # Without this, the loop would waste a bunch of iterations since we only need 60 fps
             self.clock.tick(FPS)
-################################################################################################################################################
+
     def handle_scene_change(self, result):
         # TODO Stage 5: swap scenes based on result string
         pass
