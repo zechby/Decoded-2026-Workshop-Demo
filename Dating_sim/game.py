@@ -4,7 +4,7 @@ import os
 import time
 import threading
 from groq import Groq
-from Dating_sim.helpers import (
+from helpers import (
     word_wrap,
     extract_status_from_response,
     parse_character_info,
@@ -489,7 +489,9 @@ class Game:
             # Call the current scene's update function based off the events we got
             result = self.current_scene.update(events)
             if result is not None:
-                self.handle_scene_change(result)  # Switch to a different scene if we got a flag
+                self.handle_scene_change(
+                    result
+                )  # Switch to a different scene if we got a flag
 
             # Call the draw function of the scene each frame
             self.current_scene.draw()
