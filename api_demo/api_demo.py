@@ -2,13 +2,12 @@ from groq import Groq
 from dotenv import load_dotenv
 import os
 
-
-
 # to start we need some kind of authorization to use the API
 # this often comes in the form of an "API key"
 # this is to prevent users from fraudulently spamming the API
 
 # get your API key at https://console.groq.com/keys after making an account
+# keep in mind that there are often limits on API usage, just to stop users spamming the API
 
 # we then put our api key in a new file named ".env"
 # this allows us to isolate our API key from our actual code
@@ -69,11 +68,16 @@ def call_groq(player_input: str, chat_history: list) -> str:
     
     chat_history.append(chat_response.choices[0].message)
     # we add the AI response to the chat_history from before, storing it in the global conversation array
-    return chat_history[-1].content
+    return chat_response.choices[0].message.content
      
 while True:
     user_input = input("Input a message: ")
+    # we take the input from the user (you!!)
     if user_input == "q":
         break
+    # we make a simple break statement, if you type just "q" it will end the conversation
+    
     response = call_groq(user_input, chat_history)
+    # assign the ai response to a variable
     print(f"GROQ: {response}")
+    # print the response
