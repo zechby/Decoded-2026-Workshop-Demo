@@ -18,24 +18,11 @@ screen = pygame.display.set_mode((1000, 500))
 pygame.display.set_caption("NPC Chat Demo")
 
 #load world background image
-world_background = pygame.image.load("pygame_demo/assets/world_background.png")
+world_background = pygame.image.load("assets/world_background.png")
 world_background = pygame.transform.scale(world_background, (1000, 500))
 #load chat background image
-chat_background = pygame.image.load("pygame_demo/assets/chat_background.png")
+chat_background = pygame.image.load("assets/chat_background.png")
 chat_background = pygame.transform.scale(chat_background, (1000, 500))
-
-#load npc sprite
-npc_image = pygame.image.load("pygame_demo/assets/npc.png")
-npc_world = pygame.transform.scale(npc_image, (50, 50))
-npc_chat = pygame.transform.scale(npc_image, (400, 400))
-#
-world_npc_rect = npc_world.get_rect() #create a rectangle from the loaded npc image
-world_npc_rect.centerx = screen.get_width() // 2 #center horizontally
-world_npc_rect.bottom = chat_panel.y + 100 #slightly above the chat panel
-#
-chat_npc_rect = npc_chat.get_rect()
-chat_npc_rect.centerx = screen.get_width() // 2
-chat_npc_rect.bottom = chat_panel.y + 100
 
 #
 chat_panel = pygame.Rect(0, 0, 700, 130) #create a rectangle manually
@@ -45,16 +32,31 @@ chat_panel.bottom = screen.get_height() - 20 #place near bottom
 name_panel = pygame.Rect(0, 0, chat_panel.width, 40)
 name_panel.centerx = screen.get_width() // 2
 name_panel.top = 20 #place at top of the screen
-npc_name = "Jerry"
-name_surface = font.render(npc_name, True, white)
-name_rect = name_surface.get_rect(center=name_panel.center)
+
+#load npc sprite
+npc_image = pygame.image.load("assets/npc.png")
+npc_world = pygame.transform.scale(npc_image, (70, 70))
+npc_chat = pygame.transform.scale(npc_image, (400, 400))
+#
+world_npc_rect = npc_world.get_rect() #create a rectangle from the loaded npc image
+world_npc_rect.centerx = screen.get_width() // 2 #center horizontally
+world_npc_rect.x = 650
+world_npc_rect.y = 170
+#
+chat_npc_rect = npc_chat.get_rect()
+chat_npc_rect.centerx = screen.get_width() // 2
+chat_npc_rect.bottom = chat_panel.y + 100
 
 #player sprite
-player = pygame.Rect(100, 300, 50, 50)
-player_speed = 5
+player = pygame.image.load("assets/dog.png")
+player = pygame.transform.scale(player, (70, 70))
+player_rect = player.get_rect()
+player_rect.x = 50
+player_rect.y = 260
+player_speed = 3
 
 #load background music, set volume, and play in loop
-pygame.mixer.music.load("pygame_demo/assets/music.mp3")
+pygame.mixer.music.load("assets/music.mp3")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1) #-1 means loop indefinitely
 
@@ -73,7 +75,6 @@ clock = pygame.time.Clock()
 #------------
 game_state = "world"
 frozen = False #freeze input after player responds once
-
 #messages to display in chat panel (starting with the default npc greeting)
 messages = ["NPC: Hello! What's your name?"]
 #player's current typed input
@@ -85,36 +86,37 @@ player_input = ""
 
 def handle_player_movement(keys):
     if keys[pygame.K_LEFT]:
-        player.x -= player_speed
+        player_rect.x -= player_speed
     if keys[pygame.K_RIGHT]:
-        player.x += player_speed
+        player_rect.x += player_speed
     if keys[pygame.K_UP]:
-        player.y -= player_speed
+        player_rect.y -= player_speed
     if keys[pygame.K_DOWN]:
-        player.y += player_speed
+        player_rect.y += player_speed
     
     #keep player inside screen
-    player.x = max(0, min(player.x, screen.get_width() - player.width))
-    player.y = max(0, min(player.y, screen.get_height() - player.height))
-
+    player_rect.x = max(0, min(player_rect.x, screen.get_width() - player_rect.width))
+    player_rect.y = max(0, min(player_rect.y, screen.get_height() - player_rect.height))
 
 def check_npc_interaction(keys):
-    global game_state
-    if player.colliderect(world_npc_rect):
+    global game_state, player_input, frozen, messages
+    if player_rect.colliderect(world_npc_rect):
         if keys[pygame.K_e]:
             game_state = "chat"
+            #reset game state variables
+            player_input = ""
+            frozen = False
+            messages = ["NPC: Hello! What's your name?"]
 
 
 def draw_world():
     screen.blit(world_background, (0,0))
-    #draw npc sprite
     screen.blit(npc_world, world_npc_rect)
+    screen.blit(player, player_rect)
 
-    pygame.draw.rect(screen, (0,0,255), player)
-
-    if player.colliderect(world_npc_rect):
+    if player_rect.colliderect(world_npc_rect):
         popup = font.render("Press E to talk", True, white)
-        popup_rect = popup.get_rect(center=(world_npc_rect.centerx, world_npc_rectnpc_rect.top-20))
+        popup_rect = popup.get_rect(center=(world_npc_rect.centerx, world_npc_rect.top-20))
         screen.blit(popup, popup_rect)
 
 def draw_chat():
@@ -127,6 +129,9 @@ def draw_chat():
 
     #draw npc's name panel
     pygame.draw.rect(screen, black, name_panel)
+    npc_name = "Jerry"
+    name_surface = font.render(npc_name, True, white)
+    name_rect = name_surface.get_rect(center=name_panel.center)
     screen.blit(name_surface, name_rect)
 
     #draw all messages in the chat panel
