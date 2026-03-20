@@ -215,6 +215,5 @@ while running:
 #------------
 # clean exit
 #------------
-pygame.mixer.music.stop()
 pygame.quit()
 sys.exit()
