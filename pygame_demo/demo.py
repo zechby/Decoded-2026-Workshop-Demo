@@ -18,10 +18,10 @@ screen = pygame.display.set_mode((1000, 500))
 pygame.display.set_caption("NPC Chat Demo")
 
 #load world background image
-world_background = pygame.image.load("assets/world_background.png")
+world_background = pygame.image.load("pygame_demo/assets/world_background.png")
 world_background = pygame.transform.scale(world_background, (1000, 500))
 #load chat background image
-chat_background = pygame.image.load("assets/chat_background.png")
+chat_background = pygame.image.load("pygame_demo/assets/chat_background.png")
 chat_background = pygame.transform.scale(chat_background, (1000, 500))
 
 #
@@ -34,7 +34,7 @@ name_panel.centerx = screen.get_width() // 2
 name_panel.top = 20 #place at top of the screen
 
 #load npc sprite
-npc_image = pygame.image.load("assets/npc.png")
+npc_image = pygame.image.load("pygame_demo/assets/npc.png")
 npc_world = pygame.transform.scale(npc_image, (70, 70))
 npc_chat = pygame.transform.scale(npc_image, (400, 400))
 #
@@ -48,7 +48,7 @@ chat_npc_rect.centerx = screen.get_width() // 2
 chat_npc_rect.bottom = chat_panel.y + 100
 
 #player sprite
-player = pygame.image.load("assets/dog.png")
+player = pygame.image.load("pygame_demo/assets/dog.png")
 player = pygame.transform.scale(player, (70, 70))
 player_rect = player.get_rect()
 player_rect.x = 50
@@ -56,7 +56,7 @@ player_rect.y = 260
 player_speed = 3
 
 #load background music, set volume, and play in loop
-pygame.mixer.music.load("assets/music.mp3")
+pygame.mixer.music.load("pygame_demo/assets/music.mp3")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1) #-1 means loop indefinitely
 
